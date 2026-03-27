@@ -41,6 +41,13 @@ app = FastAPI(
     redoc_url="/api/redoc"
 )
 
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
+    create_first_admin()
+
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.origins_list,
