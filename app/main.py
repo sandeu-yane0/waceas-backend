@@ -11,9 +11,6 @@ from app.models.member import Member
 from app.models.message import Message
 from app.routers import auth, media, articles, donations, members, messages, dashboard
 
-# Créer les tables
-Base.metadata.create_all(bind=engine)
-
 # Créer le premier admin
 def create_first_admin():
     db = SessionLocal()
@@ -31,8 +28,6 @@ def create_first_admin():
     finally:
         db.close()
 
-create_first_admin()
-
 app = FastAPI(
     title="WACEAS API",
     description="Backend WACEAS — Women And Child Empowerment Association",
@@ -43,8 +38,11 @@ app = FastAPI(
 
 @app.on_event("startup")
 def startup():
-    Base.metadata.create_all(bind=engine)
-    create_first_admin()
+    try:
+        Base.metadata.create_all(bind=engine)
+        create_first_admin()
+    except Exception as e:
+        print(f"⚠️ Erreur au démarrage (DB?) : {e}")
 
 
 
