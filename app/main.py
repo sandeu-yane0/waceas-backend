@@ -52,8 +52,10 @@ app = FastAPI(
 # CORS — accepte toutes les origines pour le dashboard admin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permissif — le JWT protège les routes sensibles
-    allow_credentials=False,  # Doit être False quand allow_origins=["*"]
+    allow_origins=["https://waceas.com",
+        "https://www.waceas.com",
+        "http://localhost:5173"],  # Permissif — le JWT protège les routes sensibles
+    allow_credentials=True,  # Doit être False quand allow_origins=["*"]
     allow_methods=["*"],
     allow_headers=["*"],
 )
