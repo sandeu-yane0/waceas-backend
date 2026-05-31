@@ -1,3 +1,4 @@
+import threading
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -27,17 +28,17 @@ def init_db():
                     is_active=True
                 ))
                 db.commit()
-                print(f"✅ Admin créé : {settings.FIRST_ADMIN_EMAIL}")
+                print(f"Admin cree : {settings.FIRST_ADMIN_EMAIL}")
             else:
-                print(f"ℹ️  Admin existant : {settings.FIRST_ADMIN_EMAIL}")
+                print(f"Admin existant : {settings.FIRST_ADMIN_EMAIL}")
         finally:
             db.close()
     except Exception as e:
-        print(f"⚠️  Erreur init DB (non bloquante) : {e}")
+        print(f"Erreur init DB (non bloquante) : {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    threading.Thread(target=init_db, daemon=True).start()
     yield
 
 app = FastAPI(
