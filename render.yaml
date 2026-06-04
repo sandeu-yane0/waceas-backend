@@ -1,7 +1,3 @@
-databases:
-  - name: waceas-db
-    plan: free
-
 services:
   - type: web
     name: waceas-backend
@@ -11,9 +7,7 @@ services:
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: waceas-db
-          property: connectionString
+        sync: false
       - key: SECRET_KEY
         sync: false
       - key: FIRST_ADMIN_EMAIL
