@@ -1,0 +1,17 @@
+name: waceas-backend
+services:
+  - name: web
+    type: web
+    github:
+      branch: main
+    build:
+      buildpack: nixpacks
+    run:
+      command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - port: 8000
+        protocol: http
+    checks:
+      - type: http
+        path: /health
+        port: 8000
