@@ -56,6 +56,7 @@ app.add_middleware(
     allow_origins=[
         "https://waceas.com",
         "https://www.waceas.com",
+        "https://waceas-backend.onrender.com",
         "http://localhost:5173",
         "http://localhost:3001",
     ],
