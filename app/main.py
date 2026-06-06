@@ -1,6 +1,8 @@
 import threading
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
@@ -12,6 +14,14 @@ from app.models.donation import Donation
 from app.models.member import Member
 from app.models.message import Message
 from app.routers import auth, media, articles, donations, members, messages, dashboard
+
+ALLOWED_ORIGINS = [
+    "https://waceas.com",
+    "https://www.waceas.com",
+    "https://waceas-backend.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3001",
+]
 
 def init_db():
     try:
@@ -50,20 +60,27 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS — accepte toutes les origines pour le dashboard admin
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://waceas.com",
-        "https://www.waceas.com",
-        "https://waceas-backend.onrender.com",
-        "http://localhost:5173",
-        "http://localhost:3001",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Garantit que les headers CORS sont présents même sur les erreurs 422
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    origin = request.headers.get("origin", "")
+    headers = {}
+    if origin in ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+    errors = exc.errors()
+    detail = ", ".join(
+        e.get("msg", "Erreur de validation") for e in errors
+    ) if errors else "Données invalides"
+    return JSONResponse(status_code=422, content={"detail": detail}, headers=headers)
 
 app.include_router(auth.router)
 app.include_router(media.router)
