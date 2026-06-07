@@ -8,6 +8,12 @@ from app.schemas import MemberCreate, MemberOut, MemberStatusUpdate
 
 router = APIRouter(prefix="/api/members", tags=["Members"])
 
+@router.get("/public", response_model=list[MemberOut])
+def list_public(db: Session = Depends(get_db)):
+    """Membres approuvés visibles publiquement sur le site."""
+    from app.models.member import MemberStatus
+    return db.query(Member).filter(Member.status == MemberStatus.approved).order_by(Member.created_at.desc()).all()
+
 @router.post("/", response_model=MemberOut)
 def apply(data: MemberCreate, db: Session = Depends(get_db)):
     m = Member(**data.model_dump()); db.add(m); db.commit(); db.refresh(m); return m
