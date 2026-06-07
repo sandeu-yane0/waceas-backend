@@ -92,6 +92,15 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     detail = ", ".join(e.get("msg", "Erreur de validation") for e in errors) if errors else "Données invalides"
     return JSONResponse(status_code=422, content={"detail": detail}, headers=cors_headers(request))
 
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    print(f"Erreur non gérée : {type(exc).__name__}: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Erreur serveur : {type(exc).__name__}: {str(exc)}"},
+        headers=cors_headers(request),
+    )
+
 app.include_router(auth.router)
 app.include_router(media.router)
 app.include_router(articles.router)

@@ -12,11 +12,10 @@ def init_cloudinary():
     )
 
 def upload_image(file_bytes: bytes, folder: str = "waceas", public_id: str = None) -> dict:
-    """
-    Upload une image sur Cloudinary.
-    Retourne: { 'url': str, 'public_id': str }
-    """
     init_cloudinary()
+    if not settings.CLOUDINARY_CLOUD_NAME or not settings.CLOUDINARY_API_KEY:
+        from fastapi import HTTPException
+        raise HTTPException(500, detail="Cloudinary non configuré. Vérifiez les variables d'environnement CLOUDINARY_*.")
     options = {
         "folder": folder,
         "resource_type": "image",
@@ -24,8 +23,11 @@ def upload_image(file_bytes: bytes, folder: str = "waceas", public_id: str = Non
     }
     if public_id:
         options["public_id"] = public_id
-
-    result = cloudinary.uploader.upload(file_bytes, **options)
+    try:
+        result = cloudinary.uploader.upload(file_bytes, **options)
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(500, detail=f"Erreur Cloudinary : {str(e)}")
     return {
         "url": result["secure_url"],
         "public_id": result["public_id"]
