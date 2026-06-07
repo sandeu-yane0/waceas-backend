@@ -19,7 +19,6 @@ def upload_image(file_bytes: bytes, folder: str = "waceas", public_id: str = Non
     options = {
         "folder": folder,
         "resource_type": "image",
-        "transformation": [{"quality": "auto", "fetch_format": "auto"}]
     }
     if public_id:
         options["public_id"] = public_id
