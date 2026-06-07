@@ -33,7 +33,7 @@ def create(data: ArticleCreate, db: Session = Depends(get_db), _=Depends(get_cur
     return article
 
 @router.post("/{article_id}/cover", response_model=ArticleOut)
-async def upload_cover(article_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), _=Depends(get_current_admin)):
+def upload_cover(article_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), _=Depends(get_current_admin)):
     article = db.query(Article).filter(Article.id == article_id).first()
     if not article: raise HTTPException(404, detail="Article introuvable")
     if article.cover_public_id:

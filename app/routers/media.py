@@ -26,7 +26,7 @@ def get_all(db: Session = Depends(get_db), _=Depends(get_current_admin)):
 
 # ── Admin: upload photo → Cloudinary
 @router.post("/upload/photo", response_model=MediaOut)
-async def upload_photo(
+def upload_photo(
     title: str = Form(...),
     category: str = Form("autre"),
     description: Optional[str] = Form(None),
@@ -36,10 +36,7 @@ async def upload_photo(
 ):
     if file.content_type not in ALLOWED_IMAGE_TYPES:
         raise HTTPException(400, detail="Format non supporté. Utilisez JPEG, PNG ou WebP.")
-    
-    # Upload vers Cloudinary
     result = upload_from_upload_file(file, folder="waceas/media")
-    
     media = Media(
         type="photo", category=category, title=title,
         description=description, url=result["url"], public_id=result["public_id"]
