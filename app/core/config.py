@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     FIRST_ADMIN_EMAIL: str = "admin@waceas.com"
     FIRST_ADMIN_PASSWORD: str = "WaceasAdmin2026!"
+    CLOUDINARY_URL: str = ""
     CLOUDINARY_CLOUD_NAME: str = ""
     CLOUDINARY_API_KEY: str = ""
     CLOUDINARY_API_SECRET: str = ""

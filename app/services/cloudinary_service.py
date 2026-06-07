@@ -4,18 +4,21 @@ import cloudinary.uploader
 from app.core.config import settings
 
 def init_cloudinary():
-    cloudinary.config(
-        cloud_name=settings.CLOUDINARY_CLOUD_NAME,
-        api_key=settings.CLOUDINARY_API_KEY,
-        api_secret=settings.CLOUDINARY_API_SECRET,
-        secure=True
-    )
+    if settings.CLOUDINARY_URL:
+        cloudinary.config(cloudinary_url=settings.CLOUDINARY_URL, secure=True)
+    else:
+        cloudinary.config(
+            cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+            api_key=settings.CLOUDINARY_API_KEY,
+            api_secret=settings.CLOUDINARY_API_SECRET,
+            secure=True,
+        )
 
 def upload_image(file_bytes: bytes, folder: str = "waceas", public_id: str = None) -> dict:
     init_cloudinary()
-    if not settings.CLOUDINARY_CLOUD_NAME or not settings.CLOUDINARY_API_KEY:
+    if not settings.CLOUDINARY_URL and (not settings.CLOUDINARY_CLOUD_NAME or not settings.CLOUDINARY_API_KEY):
         from fastapi import HTTPException
-        raise HTTPException(500, detail="Cloudinary non configuré. Vérifiez les variables d'environnement CLOUDINARY_*.")
+        raise HTTPException(500, detail="Cloudinary non configuré. Ajoutez CLOUDINARY_URL dans Render.")
     options = {
         "folder": folder,
         "resource_type": "image",
