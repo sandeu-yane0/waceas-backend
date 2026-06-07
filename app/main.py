@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
@@ -68,19 +69,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Garantit que les headers CORS sont présents même sur les erreurs 422
+def cors_headers(request: Request) -> dict:
+    origin = request.headers.get("origin", "")
+    if origin in ALLOWED_ORIGINS:
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+        }
+    return {}
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": str(exc.detail)},
+        headers=cors_headers(request),
+    )
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    origin = request.headers.get("origin", "")
-    headers = {}
-    if origin in ALLOWED_ORIGINS:
-        headers["Access-Control-Allow-Origin"] = origin
-        headers["Access-Control-Allow-Credentials"] = "true"
     errors = exc.errors()
-    detail = ", ".join(
-        e.get("msg", "Erreur de validation") for e in errors
-    ) if errors else "Données invalides"
-    return JSONResponse(status_code=422, content={"detail": detail}, headers=headers)
+    detail = ", ".join(e.get("msg", "Erreur de validation") for e in errors) if errors else "Données invalides"
+    return JSONResponse(status_code=422, content={"detail": detail}, headers=cors_headers(request))
 
 app.include_router(auth.router)
 app.include_router(media.router)
